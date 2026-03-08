@@ -12,12 +12,12 @@ class Student:
 
 
 
-    def rate_lecture(self, lecturer, course, grades):
+    def rate_lecture(self, lecturer, course, grade):
         if isinstance(lecturer,Lecturer) and course in self.courses_in_progress and course in lecturer.courses_attached:
             if course in lecturer.grades:
-                lecturer.grades[course] += [grades]
+                lecturer.grades[course] += [grade]
             else:
-                lecturer.grades[course] = [grades]
+                lecturer.grades[course] = [grade]
         else:
             return 'Ошибка'
 
@@ -54,13 +54,14 @@ class Lecturer(Mentor):
 
     def avg_grade(self):
         all_grades = []
-        for grades_list in self.grades.values():\
+        for grades_list in self.grades.values():
                 all_grades.extend(grades_list)
-        avg_grade = round(sum(all_grades) / len(all_grades), 2)
         if all_grades:
+            avg_grade = round(sum(all_grades) / len(all_grades), 2)
             return avg_grade
-        else: 0
-        return 0
+        else:
+            return 0
+
 
     def __str__(self):
 
@@ -69,22 +70,35 @@ class Lecturer(Mentor):
                          f"Средняя оценка за лекции: {self.avg_grade()}")
         return some_lecturer
 
-    def lecturer_vs_student(self):
-        student_average_grade = student.the_average_value()
-        lecture_average_grade = lecturer.avg_grade()
-        if student_average_grade == lecture_average_grade:
-            return f'Средняя оценка лекторов и студентов равны. {student_average_grade} = {lecture_average_grade}'
-        elif student_average_grade > lecture_average_grade:
-            return f'Cредняя оценка студентов выше чем лекторов {student_average_grade} > {lecture_average_grade}'
+    def __lt__(self, other):
+        if isinstance(other, Student):
+            return self.avg_grade() < other.the_average_value()
+        elif isinstance(other, Lecturer):
+            return self.avg_grade() < other.avg_grade()
         else:
-            return f'Cредняя оценка лекторов выше чем студентов {student_average_grade} < {lecture_average_grade}'
+            return NotImplemented
 
+    def __eq__(self, other):
+        if isinstance(other, Student):
+            return self.avg_grade() == other.the_average_value()
+        elif isinstance(other, Lecturer):
+            return self.avg_grade() == other.avg_grade()
+        else:
+            return NotImplemented
 
+    def __gt__(self, other):
+        if isinstance(other, Student):
+            return self.avg_grade() > other.the_average_value()
+        elif isinstance(other, Lecturer):
+            return self.avg_grade() > other.avg_grade()
+        else:
+            return NotImplemented
 
 
 class Reviewer(Mentor):
     def __init__(self, name, surname):
-     super().__init__(name, surname)
+        super().__init__(name, surname)
+        self.courses_attached = []
 
     def rate_hw(self, student, course, grade):
          if isinstance(student, Student) and course in self.courses_attached and course in student.courses_in_progress:
@@ -132,4 +146,8 @@ print(lecturer)
 print('----------student-----------')
 print(student)
 print('----------Средняя оценка-----------')
-print(lecturer.lecturer_vs_student())
+#print(lecturer.lecturer_vs_student())
+
+print(f'Средняя оценка лекторов({lecturer.avg_grade()}) и студентов({student.the_average_value()}) равны  : {lecturer == student}')
+print(f'Cредняя оценка студентов({student.the_average_value()}) выше чем лекторов({lecturer.avg_grade()}): {lecturer < student}')
+print(f'Cредняя оценка лекторов({lecturer.avg_grade()}) выше чем студентов({student.the_average_value()}): {lecturer > student}')
